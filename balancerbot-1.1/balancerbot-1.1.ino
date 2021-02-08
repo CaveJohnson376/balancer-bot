@@ -63,7 +63,7 @@ void loop() {
   
   float motion = PID(ax);
   
-  int PWM = map(abs(motion), 0, 16000, 0, 255);
+  int PWM = constrain(map(abs(motion), 0, 16000, 0, 255), 0, 255);
   
   ledcWrite(0, PWM);
   ledcWrite(1, PWM);
