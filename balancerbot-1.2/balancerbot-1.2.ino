@@ -9,12 +9,12 @@
 #define motorLF 26 //left motor, forward
 #define motorLB 27 //...backward
 #define motorLS 14 //...speed (PWM)
-#define motorRF 33 //right...
-#define motorRB 25 //...
+#define motorRF 25 //right...
+#define motorRB 33 //...
 #define motorRS 32 //...
 
 
-const float Pk = 6; //Proportional
+const float Pk = 4; //Proportional
 const float Ik = 0; //Integral
 const float Dk = 0.2; //Differential
 
@@ -25,6 +25,7 @@ int16_t ax, ay, az;//we only going to use X and maybe Y, as it clearly shows an 
 int16_t gx, gy, gz;//...and we ain't going to use any of these
 //because these only show rotation acceleration, but not "UP" or "DOWN" direction
 float error_prev;
+float Isum = 0;
 
 void setup() {
   //set mode for motor direction control pins
@@ -63,7 +64,7 @@ void loop() {
 
   float motion = PID(ax);
 
-  int PWM = constrain(abs(motion), 0, 65280);
+  int PWM = constrain(abs(motion), 0, 65536);
 
   ledcWrite(0, PWM);
   ledcWrite(1, PWM);
@@ -85,9 +86,9 @@ float PID (int error) {
   float P = error * Pk;
 
   //I
-  iSum= iSum+error; // Накапливаем (суммируем)if(iSum<iMin)
-  iSum= iMin;  // Проверяем граничные значениеif(iSum>iMax) 
-  iSum = iMax;ui= ki*iSum;
+  Isum = Isum + error; // Накапливаем (суммируем)
+  Isum = constrain(Isum, -65536, 65536); // Проверяем граничные значение
+  float I = Ik * Isum;
 
   //D
   float D = (error - error_prev) * Dk;
@@ -96,4 +97,3 @@ float PID (int error) {
   //output
   return P + I + D;
 }
-
